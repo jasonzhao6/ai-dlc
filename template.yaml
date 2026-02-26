@@ -23,6 +23,7 @@ Globals:
     Runtime: python3.12
     Timeout: 30
     MemorySize: 256
+    PermissionsBoundary: arn:aws:iam::740481921028:policy/britive-scratch-dev-boundary
     Environment:
       Variables:
         TABLE_NAME: !Ref FileShareTable
@@ -101,33 +102,6 @@ Resources:
             AllowedOrigins:
               - '*'
             MaxAge: 3600
-
-  # ============================================================
-  # S3 — Frontend Static Website Bucket
-  # ============================================================
-  FrontendBucket:
-    Type: AWS::S3::Bucket
-    Properties:
-      BucketName: !Sub file-share-frontend-${Stage}-${AWS::AccountId}
-      WebsiteConfiguration:
-        IndexDocument: index.html
-        ErrorDocument: index.html
-      PublicAccessBlockConfiguration:
-        BlockPublicAcls: false
-        BlockPublicPolicy: false
-        IgnorePublicAcls: false
-        RestrictPublicBuckets: false
-
-  FrontendBucketPolicy:
-    Type: AWS::S3::BucketPolicy
-    Properties:
-      Bucket: !Ref FrontendBucket
-      PolicyDocument:
-        Statement:
-          - Effect: Allow
-            Principal: '*'
-            Action: s3:GetObject
-            Resource: !Sub arn:aws:s3:::${FrontendBucket}/*
 
   # ============================================================
   # API Gateway — REST API
@@ -343,12 +317,6 @@ Outputs:
   StorageBucketName:
     Description: S3 storage bucket name
     Value: !Ref StorageBucket
-  FrontendBucketName:
-    Description: S3 frontend bucket name
-    Value: !Ref FrontendBucket
-  FrontendUrl:
-    Description: Frontend website URL
-    Value: !GetAtt FrontendBucket.WebsiteURL
   FileShareTableName:
     Description: DynamoDB table name
     Value: !Ref FileShareTable

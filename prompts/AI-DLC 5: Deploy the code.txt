@@ -1,0 +1,19 @@
+Your Role: You are an experienced Cloud Architect. Before you start the task as mentioned below, please do the planning and write your steps in the markdown file .aidlc/deployment_plan.md file with checkboxes against each step in the plan. List your Deliverables in the plan file. If any step needs my clarification, please add it to the step to interact with me and get my confirmation. Do not make critical decisions on your own. Once you produce the plan, ask for my review and approval. After my approval, you can go ahead to execute the same plan one step at a time. Once you finish each step, mark the checkboxes as done in the plan.
+Task: Use the following steps to deploy the application code generated in the backend and react-app folders to AWS us-west-2 Region. This workstation already has appropriate permissions for the AWS CLI using an IAM Role with an EC2 instance profile.
+Step 1: Create and Deploy IaC for the React app
+Create a CloudFormation YAML file that defines:
+  - A private S3 bucket with a random prefix. E.g. -react-app-bucket-s3-file-share-workshop
+  - A CloudFront distribution with a path pattern pointing to the S3 origin with Origin Access Control and Bucket policy
+- CloudFormation Outputs: Buckets, Distribution ID, and CloudFront URL
+- Ensure all IAM policy documents are valid, including Version: '2012-10-17' (quoted) and use proper resource ARNs (e.g., arn:aws:s3:::bucket/* for object access).
+The app should be accessible at the default CloudFront distribution domain name at the root path. E.g. https://.cloudfront.net/
+Step 2: USE AWS CLI to deploy the CloudFormation template
+- Validate using validate-template command and edit if needed
+- Deploy using Stack names: s3-file-share-workshop
+- Monitor for successful completion and keep me updated with the Stack deployment status
+- Once complete, lookup the distribution ID and URL from the stack outputs.
+Step 3: Deploy the React App and Server Side components
+- Update the React application with any prefix and CloudFront URL. E.g. the React Router basename, package.json, .env file, and any other files you deem relevant
+- Build the React application
+- Copy the web assets to the S3 origin
+- curl the full URL to verify that the access works
