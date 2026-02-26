@@ -1,0 +1,35 @@
+{
+  "AuthUsersFunction": {
+    "TABLE_NAME": "FileShareTable-dev",
+    "DYNAMODB_ENDPOINT": "http://dynamodb-local:8000",
+    "AWS_ACCESS_KEY_ID": "dummy",
+    "AWS_SECRET_ACCESS_KEY": "dummy",
+    "AWS_SESSION_TOKEN": "",
+    "AWS_DEFAULT_REGION": "us-east-1"
+  },
+  "FoldersFunction": {
+    "TABLE_NAME": "FileShareTable-dev",
+    "DYNAMODB_ENDPOINT": "http://dynamodb-local:8000",
+    "AWS_ACCESS_KEY_ID": "dummy",
+    "AWS_SECRET_ACCESS_KEY": "dummy",
+    "AWS_SESSION_TOKEN": "",
+    "AWS_DEFAULT_REGION": "us-east-1"
+  },
+  "FilesFunction": {
+    "TABLE_NAME": "FileShareTable-dev",
+    "DYNAMODB_ENDPOINT": "http://dynamodb-local:8000",
+    "STORAGE_BUCKET": "file-share-storage-dev",
+    "AWS_ACCESS_KEY_ID": "dummy",
+    "AWS_SECRET_ACCESS_KEY": "dummy",
+    "AWS_SESSION_TOKEN": "",
+    "AWS_DEFAULT_REGION": "us-east-1"
+  },
+  "SeedFunction": {
+    "TABLE_NAME": "FileShareTable-dev",
+    "DYNAMODB_ENDPOINT": "http://dynamodb-local:8000",
+    "AWS_ACCESS_KEY_ID": "dummy",
+    "AWS_SECRET_ACCESS_KEY": "dummy",
+    "AWS_SESSION_TOKEN": "",
+    "AWS_DEFAULT_REGION": "us-east-1"
+  }
+}

@@ -1,0 +1,14 @@
+Your Role: You are an experienced software engineer. Read the specs documents and proceed with building the application, task by task. Before you start building please do the planning and write your steps in the markdown file .aidlc/app_plan.md file with checkboxes against each step in the plan. List your Deliverables in the plan file. If any step needs my clarification, please add it to the step to interact with me and get my confirmation. Do not make critical decisions on your own. Once you produce the plan, ask for my review and approval.
+
+After my approval, execute the same plan and all the specs in specs/ folder, one step at a time. Remember to check off each task as it gets completed, check off the corresponding task in the spec task docs, and if the task involves a back-end, server-side, request make sure to test it with a real HTTPS request. NEVER mock up any data except when you need a placeholder. The final app should not have any mock data hardcoded anywhere.
+Task: You MUST refer to component design in the .aidlc/component_model.md file and the .aidlc/user_stories.md file.
+-	Use modern design styling for the UX with Bootstrap CDN: icons, color theme, responsive layout, intuitive visual hierarchy, CSS for hover effects
+-	Choose a creative professional color theme avoiding default blue (e.g. green, blue, teal, gray, purple, orange, teal etc.)
+-	Do not run the npm dev server, only use npm-install and npm-run-build. We will deploy the app separately
+-	Create a TODO file for post-deployment tasks where you keep track of actions that failed and you need to execute after a full deploy
+-	Use SAM to test lambda functions locally
+-	Verify Lambda layers structure before first deployment, create a layer verification script, and document the layer structure in code
+-	Follow AWS Lambda Layer Best Practices from Start
+-	Check Lambda Context Attributes and reference AWS documentation via the AWS Docs MCP server for the correct attribute names
+-	Use SAM Local for Faster Iteration
+-	Read CloudWatch Logs Immediately After First Deploy

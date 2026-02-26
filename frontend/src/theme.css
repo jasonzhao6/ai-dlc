@@ -1,0 +1,185 @@
+/* ============================================================
+   FileShare — Teal + Dark Gray Theme
+   ============================================================ */
+
+:root {
+  --fs-primary: #0d9488;
+  --fs-primary-hover: #0f766e;
+  --fs-primary-light: #14b8a6;
+  --fs-dark: #1e293b;
+  --fs-dark-hover: #334155;
+  --fs-accent: #14b8a6;
+  --fs-bg-light: #f0fdfa;
+  --fs-bg-white: #ffffff;
+  --fs-text: #334155;
+  --fs-text-muted: #64748b;
+  --fs-border: #e2e8f0;
+  --fs-danger: #ef4444;
+  --fs-danger-hover: #dc2626;
+  --fs-success: #10b981;
+  --fs-warning: #f59e0b;
+}
+
+body {
+  font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+  color: var(--fs-text);
+  background-color: #f8fafc;
+  margin: 0;
+}
+
+/* ---- Buttons ---- */
+.btn-primary,
+.btn-fs-primary {
+  background-color: var(--fs-primary) !important;
+  border-color: var(--fs-primary) !important;
+  color: #fff !important;
+}
+.btn-primary:hover,
+.btn-fs-primary:hover {
+  background-color: var(--fs-primary-hover) !important;
+  border-color: var(--fs-primary-hover) !important;
+}
+.btn-outline-primary {
+  color: var(--fs-primary) !important;
+  border-color: var(--fs-primary) !important;
+}
+.btn-outline-primary:hover {
+  background-color: var(--fs-primary) !important;
+  color: #fff !important;
+}
+
+/* ---- Navbar ---- */
+.navbar-fs {
+  background-color: var(--fs-dark);
+}
+.navbar-fs .navbar-brand,
+.navbar-fs .nav-link {
+  color: #f1f5f9 !important;
+}
+.navbar-fs .nav-link:hover {
+  color: var(--fs-accent) !important;
+}
+
+/* ---- Sidebar ---- */
+.sidebar-fs {
+  background-color: var(--fs-bg-white);
+  border-right: 1px solid var(--fs-border);
+  min-height: calc(100vh - 56px);
+}
+.sidebar-fs .nav-link {
+  color: var(--fs-text);
+  border-radius: 0.375rem;
+  padding: 0.5rem 1rem;
+  margin: 0.125rem 0.5rem;
+  transition: background-color 0.15s, color 0.15s;
+}
+.sidebar-fs .nav-link:hover {
+  background-color: var(--fs-bg-light);
+  color: var(--fs-primary);
+}
+.sidebar-fs .nav-link.active {
+  background-color: var(--fs-primary);
+  color: #fff;
+}
+
+/* ---- Cards ---- */
+.card {
+  border: 1px solid var(--fs-border);
+  box-shadow: 0 1px 3px rgba(0,0,0,0.04);
+}
+.card:hover {
+  box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+/* ---- Tables ---- */
+.table thead th {
+  background-color: var(--fs-bg-light);
+  color: var(--fs-dark);
+  font-weight: 600;
+  border-bottom: 2px solid var(--fs-primary);
+}
+.table tbody tr:hover {
+  background-color: var(--fs-bg-light);
+}
+.sortable-header {
+  cursor: pointer;
+  user-select: none;
+}
+.sortable-header:hover {
+  color: var(--fs-primary);
+}
+
+/* ---- Breadcrumb ---- */
+.breadcrumb-item a {
+  color: var(--fs-primary);
+  text-decoration: none;
+}
+.breadcrumb-item a:hover {
+  color: var(--fs-primary-hover);
+  text-decoration: underline;
+}
+
+/* ---- Badges ---- */
+.badge-fs {
+  background-color: var(--fs-primary);
+}
+.badge-admin {
+  background-color: var(--fs-primary);
+}
+.badge-uploader {
+  background-color: var(--fs-success);
+}
+.badge-reader {
+  background-color: #6366f1;
+}
+.badge-viewer {
+  background-color: var(--fs-text-muted);
+}
+
+/* ---- Login Page ---- */
+.login-container {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: linear-gradient(135deg, var(--fs-dark) 0%, #0f4c4d 100%);
+}
+.login-card {
+  max-width: 420px;
+  width: 100%;
+  border: none;
+  border-radius: 1rem;
+  box-shadow: 0 8px 32px rgba(0,0,0,0.2);
+}
+.login-card .card-header {
+  background-color: var(--fs-primary);
+  color: #fff;
+  text-align: center;
+  border-radius: 1rem 1rem 0 0 !important;
+  padding: 1.5rem;
+}
+
+/* ---- Search ---- */
+.search-input {
+  border-color: var(--fs-border);
+}
+.search-input:focus {
+  border-color: var(--fs-primary);
+  box-shadow: 0 0 0 0.2rem rgba(13, 148, 136, 0.25);
+}
+
+/* ---- Progress ---- */
+.progress-bar {
+  background-color: var(--fs-primary) !important;
+}
+
+/* ---- Misc ---- */
+.text-fs-primary {
+  color: var(--fs-primary) !important;
+}
+.bg-fs-primary {
+  background-color: var(--fs-primary) !important;
+}
+.bg-fs-light {
+  background-color: var(--fs-bg-light) !important;
+}

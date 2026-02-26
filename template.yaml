@@ -1,0 +1,354 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: S3 File-Sharing System
+
+Parameters:
+  Stage:
+    Type: String
+    Default: dev
+    AllowedValues:
+      - dev
+      - staging
+      - prod
+  AWSRegionParam:
+    Type: String
+    Default: us-east-1
+    AllowedValues:
+      - us-east-1
+      - us-east-2
+      - us-west-2
+
+Globals:
+  Function:
+    Runtime: python3.12
+    Timeout: 30
+    MemorySize: 256
+    Environment:
+      Variables:
+        TABLE_NAME: !Ref FileShareTable
+        STORAGE_BUCKET: !Ref StorageBucket
+        STAGE: !Ref Stage
+        DYNAMODB_ENDPOINT: ""
+    Layers:
+      - !Ref SharedLayer
+
+Resources:
+
+  # ============================================================
+  # Lambda Layer — Shared utilities (db, response, auth_middleware)
+  # ============================================================
+  SharedLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub file-share-shared-${Stage}
+      Description: Shared utilities for all Lambda functions
+      ContentUri: backend/layers/shared/
+      CompatibleRuntimes:
+        - python3.12
+      RetentionPolicy: Delete
+    Metadata:
+      BuildMethod: python3.12
+
+  # ============================================================
+  # DynamoDB — Single Table Design
+  # ============================================================
+  FileShareTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: !Sub FileShareTable-${Stage}
+      BillingMode: PAY_PER_REQUEST
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+        - AttributeName: GSI1PK
+          AttributeType: S
+        - AttributeName: GSI1SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      GlobalSecondaryIndexes:
+        - IndexName: GSI1
+          KeySchema:
+            - AttributeName: GSI1PK
+              KeyType: HASH
+            - AttributeName: GSI1SK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+      TimeToLiveSpecification:
+        AttributeName: ttl
+        Enabled: true
+
+  # ============================================================
+  # S3 — File Storage Bucket
+  # ============================================================
+  StorageBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub file-share-storage-${Stage}-${AWS::AccountId}
+      CorsConfiguration:
+        CorsRules:
+          - AllowedHeaders:
+              - '*'
+            AllowedMethods:
+              - GET
+              - PUT
+            AllowedOrigins:
+              - '*'
+            MaxAge: 3600
+
+  # ============================================================
+  # S3 — Frontend Static Website Bucket
+  # ============================================================
+  FrontendBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub file-share-frontend-${Stage}-${AWS::AccountId}
+      WebsiteConfiguration:
+        IndexDocument: index.html
+        ErrorDocument: index.html
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: false
+        BlockPublicPolicy: false
+        IgnorePublicAcls: false
+        RestrictPublicBuckets: false
+
+  FrontendBucketPolicy:
+    Type: AWS::S3::BucketPolicy
+    Properties:
+      Bucket: !Ref FrontendBucket
+      PolicyDocument:
+        Statement:
+          - Effect: Allow
+            Principal: '*'
+            Action: s3:GetObject
+            Resource: !Sub arn:aws:s3:::${FrontendBucket}/*
+
+  # ============================================================
+  # API Gateway — REST API
+  # ============================================================
+  FileShareApi:
+    Type: AWS::Serverless::Api
+    Properties:
+      Name: !Sub file-share-api-${Stage}
+      StageName: !Ref Stage
+      Cors:
+        AllowMethods: "'GET,POST,PUT,DELETE,OPTIONS'"
+        AllowHeaders: "'Content-Type,Authorization'"
+        AllowOrigin: "'*'"
+
+  # ============================================================
+  # Lambda — Auth & Users
+  # ============================================================
+  AuthUsersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub file-share-auth-users-${Stage}
+      CodeUri: backend/auth_users/
+      Handler: handler.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FileShareTable
+      Events:
+        AuthLogin:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /auth/login
+            Method: post
+        AuthLogout:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /auth/logout
+            Method: post
+        AuthChangePassword:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /auth/change-password
+            Method: post
+        UsersGet:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /users
+            Method: get
+        UsersPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /users
+            Method: post
+        UsersPut:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /users/{username}
+            Method: put
+        UsersDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /users/{username}
+            Method: delete
+        UsersResetPassword:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /users/{username}/reset-password
+            Method: post
+
+  # ============================================================
+  # Lambda — Folders
+  # ============================================================
+  FoldersFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub file-share-folders-${Stage}
+      CodeUri: backend/folders/
+      Handler: handler.lambda_handler
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FileShareTable
+        - S3CrudPolicy:
+            BucketName: !Ref StorageBucket
+      Events:
+        FoldersGet:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /folders
+            Method: get
+        FoldersPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /folders
+            Method: post
+        FoldersPut:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /folders/{folderId}
+            Method: put
+        FoldersDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /folders/{folderId}
+            Method: delete
+        FolderAssignmentsGet:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /folders/{folderId}/assignments
+            Method: get
+        FolderAssignmentsPost:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /folders/{folderId}/assignments
+            Method: post
+        FolderAssignmentsDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /folders/{folderId}/assignments/{username}
+            Method: delete
+
+  # ============================================================
+  # Lambda — Files
+  # ============================================================
+  FilesFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub file-share-files-${Stage}
+      CodeUri: backend/files/
+      Handler: handler.lambda_handler
+      Environment:
+        Variables:
+          TABLE_NAME: !Ref FileShareTable
+          STORAGE_BUCKET: !Ref StorageBucket
+          STAGE: !Ref Stage
+          DYNAMODB_ENDPOINT: ""
+          UPLOAD_URL_TTL: '900'
+          DOWNLOAD_URL_TTL: '900'
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FileShareTable
+        - S3CrudPolicy:
+            BucketName: !Ref StorageBucket
+      Events:
+        FolderFiles:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /folders/{folderId}/files
+            Method: get
+        FilesUploadUrl:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /files/upload-url
+            Method: post
+        FilesConfirmUpload:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /files/confirm-upload
+            Method: post
+        FilesDownloadUrl:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /files/download-url
+            Method: post
+        FilesDelete:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /files/{fileId}
+            Method: delete
+        FilesSearch:
+          Type: Api
+          Properties:
+            RestApiId: !Ref FileShareApi
+            Path: /files/search
+            Method: get
+
+  # ============================================================
+  # Lambda — Seed (Admin Account)
+  # ============================================================
+  SeedFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub file-share-seed-${Stage}
+      CodeUri: backend/seed/
+      Handler: handler.lambda_handler
+      Timeout: 60
+      Policies:
+        - DynamoDBCrudPolicy:
+            TableName: !Ref FileShareTable
+
+Outputs:
+  ApiUrl:
+    Description: API Gateway URL
+    Value: !Sub https://${FileShareApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}
+  StorageBucketName:
+    Description: S3 storage bucket name
+    Value: !Ref StorageBucket
+  FrontendBucketName:
+    Description: S3 frontend bucket name
+    Value: !Ref FrontendBucket
+  FrontendUrl:
+    Description: Frontend website URL
+    Value: !GetAtt FrontendBucket.WebsiteURL
+  FileShareTableName:
+    Description: DynamoDB table name
+    Value: !Ref FileShareTable
