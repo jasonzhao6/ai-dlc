@@ -33,15 +33,15 @@ def _get_s3():
     """Lazy-init S3 client."""
     global _s3_client
     if _s3_client is None:
-        endpoint_url = os.environ.get('DYNAMODB_ENDPOINT')
-        if endpoint_url:
-            # Local testing: use dummy S3 client (won't actually work for pre-signed URLs)
+        s3_endpoint = os.environ.get('S3_ENDPOINT')
+        if s3_endpoint:
+            # Local testing with MinIO
             session = boto3.Session(
-                aws_access_key_id='dummy',
-                aws_secret_access_key='dummy',
+                aws_access_key_id=os.environ.get('S3_ACCESS_KEY', 'minioadmin'),
+                aws_secret_access_key=os.environ.get('S3_SECRET_KEY', 'minioadmin'),
                 region_name=os.environ.get('AWS_DEFAULT_REGION', 'us-east-1'),
             )
-            _s3_client = session.client('s3', endpoint_url=endpoint_url)
+            _s3_client = session.client('s3', endpoint_url=s3_endpoint)
         else:
             _s3_client = boto3.client('s3')
     return _s3_client

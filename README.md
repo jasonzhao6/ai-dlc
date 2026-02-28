@@ -32,20 +32,35 @@ docker network create sam-network
 docker run -d --name dynamodb-local --network sam-network -p 8000:8000 amazon/dynamodb-local
 ```
 
-### 3. Build and start the backend
+### 3. Start MinIO (local S3)
+
+```bash
+docker run -d --name minio --network sam-network -p 9000:9000 -p 9001:9001 \
+  -e MINIO_ROOT_USER=minioadmin -e MINIO_ROOT_PASSWORD=minioadmin \
+  minio/minio server /data --console-address ":9001"
+```
+
+Create the storage bucket:
+
+```bash
+AWS_ACCESS_KEY_ID=minioadmin AWS_SECRET_ACCESS_KEY=minioadmin \
+  aws --endpoint-url http://localhost:9000 s3 mb s3://file-share-storage-dev
+```
+
+### 4. Build and start the backend
 
 ```bash
 sam build
 sam local start-api --docker-network sam-network --env-vars tests/local-env.json --warm-containers EAGER
 ```
 
-### 4. Seed the admin user (in a second terminal)
+### 5. Seed the admin user (in a second terminal)
 
 ```bash
 python3 tests/seed_admin.py
 ```
 
-### 5. Start the frontend (in a third terminal)
+### 6. Start the frontend (in a third terminal)
 
 ```bash
 cd frontend
@@ -53,7 +68,7 @@ npm install   # first time only
 npm run dev
 ```
 
-### 6. Open the app
+### 7. Open the app
 
 Go to http://localhost:5173 and log in:
 - **Username:** `admin`
@@ -61,7 +76,7 @@ Go to http://localhost:5173 and log in:
 
 ## Running Tests
 
-The e2e test suite requires DynamoDB Local running on port 8000. The script handles everything else (starting SAM API, seeding, cleanup):
+The e2e test suite requires DynamoDB Local running on port 8000. The script handles everything else (starting the SAM API, seeding, cleanup):
 
 ```bash
 bash tests/run_e2e.sh
