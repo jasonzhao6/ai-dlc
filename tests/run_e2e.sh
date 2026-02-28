@@ -20,6 +20,7 @@ REGION="us-east-1"
 API_URL="http://127.0.0.1:3000"
 export AWS_ACCESS_KEY_ID=dummy
 export AWS_SECRET_ACCESS_KEY=dummy
+export AWS_PAGER=""
 
 SAM_PID=""
 
